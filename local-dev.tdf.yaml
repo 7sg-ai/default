@@ -2,6 +2,7 @@ apiVersion: tdf.7sg.ai/v1
 kind: TargetDefinition
 metadata:
   name: local-dev
+  version: "1.0.0"
   displayName: Local Development
   description: Developer laptop / docker-desktop / kind/minikube target for local
     validation.
