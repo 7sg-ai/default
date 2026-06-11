@@ -1,3 +1,4 @@
+
 apiVersion: tdf.7sg.ai/v1
 kind: TargetDefinition
 metadata:
@@ -54,7 +55,7 @@ target:
       capabilities:
         supportsPrivateEndpoints: true
     - name: artifact-registry
-      type: custom
+      type: container-registry
       providerService: Artifact Registry
       defaults:
         project: gen-lang-client-0373235205
