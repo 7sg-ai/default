@@ -69,7 +69,7 @@ target:
       supportsTLS: true
       supportsSASL: true
     availability:
-      sla: best-effort
+      slaTier: best-effort
   infrastructure:
     clusters:
     - name: <aks-cluster>
