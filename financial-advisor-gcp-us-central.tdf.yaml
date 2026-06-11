@@ -53,7 +53,7 @@ target:
       capabilities:
         supportsPrivateEndpoints: true
     - name: artifact-registry
-      type: custom
+      type: container-registry
       providerService: Artifact Registry
       defaults:
         project: gen-lang-client-0373235205
