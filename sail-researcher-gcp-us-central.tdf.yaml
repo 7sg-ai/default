@@ -1,12 +1,14 @@
 apiVersion: tdf.7sg.ai/v1
 kind: TargetDefinition
 metadata:
-  name: story-teller-gcp-us-central
+  name: sail-researcher-gcp-us-central
   version: "1.0.0"
-  displayName: GCP US Central - Cloud Run + Vertex AI
+  displayName: GCP US Central — Cloud Run + Gemini + Maps
   description: >
-    GCP target for the Story Teller agent. Cloud Run for serverless
-    container hosting and Vertex AI for Gemini model access.
+    GCP target for the Sail Researcher ADK agent. Cloud Run hosts the Go HTTP
+    service; Gemini API supplies all LLM agents; Google Maps Platform powers
+    Places and geocoding tools; Secret Manager holds runtime credentials;
+    Cloud Trace and Cloud Logging provide observability.
   tags:
     provider: gcp
     geo: us
@@ -33,19 +35,24 @@ target:
       quotas:
         maxCPUCores: 8
         maxMemoryGiB: 32
-    - name: vertex-ai
+    - name: gemini-api
       type: ml-platform
-      providerService: Vertex AI (Gemini)
+      providerService: Gemini API (Google AI)
       endpoints:
-        api: https://us-central1-aiplatform.googleapis.com
+        api: https://generativelanguage.googleapis.com
       capabilities:
-        supportsOIDCWorkloadIdentity: true
+        supportsOIDCWorkloadIdentity: false
       availability:
         slaTier: standard
         supportedRegions:
-          - us-central1
-          - us-east1
-          - europe-west1
+          - global
+    - name: maps-platform
+      type: custom
+      providerService: Google Maps Platform (Places API)
+      endpoints:
+        api: https://maps.googleapis.com
+      capabilities:
+        supportsPrivateEndpoints: false
     - name: secret-manager
       type: secrets
       providerService: Secret Manager
@@ -59,6 +66,11 @@ target:
     - name: cloud-logging
       type: observability
       providerService: Cloud Logging + Cloud Monitoring
+    - name: cloud-trace
+      type: observability
+      providerService: Cloud Trace
+      capabilities:
+        supportsOIDCWorkloadIdentity: true
     - name: iam
       type: identity
       providerService: IAM + Workload Identity

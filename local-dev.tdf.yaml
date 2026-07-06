@@ -4,8 +4,7 @@ metadata:
   name: local-dev
   version: "1.0.0"
   displayName: Local Development
-  description: Developer laptop / docker-desktop / kind/minikube target for local
-    validation.
+  description: Developer laptop / docker-desktop / kind/minikube target for local validation.
   tags:
     provider: onprem
     geo: local
@@ -13,24 +12,18 @@ metadata:
 target:
   provider: onprem
   regions:
-  - local
-  geography:
-    continent: na
-    country: us
-    metro: local
+    - local
   networking:
     defaultNetworkPolicy: public
   services:
-  - name: docker
-    type: custom
-    providerService: Docker Desktop / Podman
-  - name: kind
-    type: kubernetes
-    providerService: kind/minikube
-    defaults:
-      namespace: financial-analysis
-  - name: filesystem
-    type: file-store
-    providerService: Local filesystem
-  infrastructure:
-    notes: Assumes developer supplies local .env and runs containers locally.
+    - name: docker
+      type: custom
+      providerService: Docker Desktop / Podman
+    - name: kind
+      type: kubernetes
+      providerService: kind/minikube
+      defaults:
+        namespace: financial-analysis
+    - name: filesystem
+      type: file-store
+      providerService: Local filesystem

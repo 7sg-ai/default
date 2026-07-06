@@ -3,77 +3,44 @@ kind: TargetDefinition
 metadata:
   name: azure-east
   version: "1.0.0"
-  displayName: Azure East (logical target)
-  description: Logical Azure target spanning eastus/eastus2/northcentralus; used by
-    Financial Analysis workloads.
+  displayName: Azure East Happy Path
+  description: Logical Azure target for financial-analysis happy-path ingest testing.
   tags:
     provider: azure
     geo: us
-    tier: native
+    tier: ingest-happy-path
 target:
   provider: azure
   regions:
-  - eastus
-  - eastus2
-  - northcentralus
+    - eastus2
   geography:
     continent: na
     country: us
-    zoneGroup: us-central
+    zoneGroup: us-east
   networking:
     defaultNetworkPolicy: private
   services:
-  - name: aks
-    type: kubernetes
-    providerService: AKS
-    capabilities:
-      supportsOIDCWorkloadIdentity: true
-      supportsPrivateEndpoints: true
-    defaults:
-      namespace: financial-analysis
-      resourceGroup: rg-financial-analysis
-      subscription: <azure-subscription-id>
-  - name: synapse
-    type: spark
-    providerService: Azure Synapse Spark
-    endpoints:
-      workspace: https://<synapse-workspace>.dev.azuresynapse.net
-    capabilities:
-      supportsPrivateEndpoints: true
-  - name: adls
-    type: object-store
-    providerService: ADLS Gen2
-    endpoints:
-      dfs: https://<storage-account>.dfs.core.windows.net
-    capabilities:
-      supportsPrivateEndpoints: true
-  - name: keyvault
-    type: secrets
-    providerService: Azure Key Vault
-    endpoints:
-      vault: https://<keyvault-name>.vault.azure.net/
-    capabilities:
-      supportsPrivateEndpoints: true
-  - name: managed-identity
-    type: identity
-    providerService: Managed Identity
-  - name: observability
-    type: observability
-    providerService: Azure Monitor / Log Analytics
-  - name: kafka-bridge
-    type: queue
-    providerService: Kafka-compatible broker (Event Hubs Kafka / Confluent / self-managed)
-    endpoints:
-      bootstrap: <azure-kafka-bootstrap>:9093
-    capabilities:
-      supportsTLS: true
-      supportsSASL: true
-    availability:
-      slaTier: best-effort
-  infrastructure:
-    clusters:
-    - name: <aks-cluster>
-      service: aks
-    secretStores:
-    - name: <keyvault-secret-store>
-      service: keyvault
+    - name: container-apps
+      type: container-apps
+      providerService: Azure Container Apps
+      defaults:
+        resourceGroup: rg-financial-analysis
+        namespace: financial-analysis
+    - name: container-registry
+      type: container-registry
+      providerService: Azure Container Registry
+      defaults:
+        resourceGroup: rg-financial-analysis
+        account: uvfinancialsourceacr
+    - name: synapse
+      type: spark
+      providerService: Azure Synapse Spark
+    - name: adls
+      type: object-store
+      providerService: Azure Data Lake Storage Gen2
+    - name: keyvault
+      type: secrets
+      providerService: Azure Key Vault
+    - name: monitor
+      type: observability
+      providerService: Azure Monitor
