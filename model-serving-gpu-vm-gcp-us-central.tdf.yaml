@@ -40,25 +40,25 @@ target:
         http: http://136.113.88.57
       capabilities:
         supportsSSH: true
-        supportsDockerCompose: true
+        supportsDockerCompose: true   # docker compose v5.5.1 installed
+        supportsGPUContainers: true  # NVIDIA Container Toolkit 1.20.0, GPU passthrough verified
         gpuTypes:
-          # Llama-3.1-8B-Instruct in bf16 needs ~16GB VRAM; a single 24GB GPU
-          # is the minimum. Confirm the actual accelerator on the VM once the
-          # PEM is available; both L4 and A10 are 24GB and interchangeable here.
-          - nvidia-l4
-          - nvidia-tesla-a10
+          # Verified on the VM: NVIDIA A100-SXM4-40GB (40 GB VRAM, driver 615.71.09).
+          # Llama-3.1-8B-Instruct in bf16 (~16 GB) fits easily; the 40 GB VRAM
+          # also leaves room for larger models / longer KV cache if needed.
+          - nvidia-a100-40gb
       quotas:
         maxGPU: 1
-        maxCPUCores: 16
-        maxMemoryGiB: 64
+        maxCPUCores: 12   # verified: 12 vCPUs
+        maxMemoryGiB: 83  # verified: 83 GiB RAM
       availability:
         slaTier: best-effort
     - name: docker
       type: custom
       providerService: Docker Engine + NVIDIA Container Toolkit
       capabilities:
-        supportsGPUContainers: true
-        supportsCompose: true
+        supportsGPUContainers: true   # NVIDIA Container Toolkit 1.20.0
+        supportsCompose: true          # Docker Compose v5.5.1 installed
     - name: artifact-registry
       type: container-registry
       providerService: Artifact Registry
