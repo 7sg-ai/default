@@ -1,0 +1,122 @@
+apiVersion: tdf.7sg.ai/v1
+kind: TargetDefinition
+metadata:
+  name: model-serving-gpu-vm-gcp-us-central
+  version: "1.0.0"
+  displayName: GCP US Central - GPU VM (single-host, Docker Compose)
+  description: >
+    Pre-provisioned GCP GPU VM target for the 7sg-ai/model-serving apps.
+    A single GPU VM (Docker + NVIDIA Container Toolkit) hosts the app container
+    and its vLLM/NIM model-server sidecar via Docker Compose. Used for profiling
+    and testing of the locally-hosted open-weight model serving apps.
+    Deploy agents reach the VM over SSH with a PEM key (secret ref) and ship
+    images via Artifact Registry. No Kubernetes, no Cloud Run.
+  tags:
+    provider: gcp
+    geo: us
+    tier: gpu-vm
+target:
+  provider: gcp
+  regions:
+    - us-central1
+  geography:
+    continent: na
+    country: us
+    metro: iowa
+  networking:
+    defaultNetworkPolicy: public
+  # The compute substrate is a single pre-provisioned GCE GPU VM, not a managed
+  # runtime. Deploy agents resolve platform="vm" from this and use SSH + Docker
+  # Compose as the provider-apply path.
+  platform: vm
+  services:
+    - name: gpu-vm
+      type: custom
+      providerService: GCE GPU VM (single host)
+      endpoints:
+        # Public IP of the VM. Not secret. SSH user is fixed to "ubuntu".
+        # The PEM key is a secret (see credentialProfiles.ssh); never inline it.
+        ssh: ubuntu@136.113.88.57
+        http: http://136.113.88.57
+      capabilities:
+        supportsSSH: true
+        supportsDockerCompose: true
+        gpuTypes:
+          # Llama-3.1-8B-Instruct in bf16 needs ~16GB VRAM; a single 24GB GPU
+          # is the minimum. Confirm the actual accelerator on the VM once the
+          # PEM is available; both L4 and A10 are 24GB and interchangeable here.
+          - nvidia-l4
+          - nvidia-tesla-a10
+      quotas:
+        maxGPU: 1
+        maxCPUCores: 16
+        maxMemoryGiB: 64
+      availability:
+        slaTier: best-effort
+    - name: docker
+      type: custom
+      providerService: Docker Engine + NVIDIA Container Toolkit
+      capabilities:
+        supportsGPUContainers: true
+        supportsCompose: true
+    - name: artifact-registry
+      type: container-registry
+      providerService: Artifact Registry
+      endpoints:
+        registry: us-central1-docker.pkg.dev
+    - name: secret-manager
+      type: secrets
+      providerService: Secret Manager
+      capabilities:
+        supportsPrivateEndpoints: true
+    - name: cloud-logging
+      type: observability
+      providerService: Cloud Logging + Cloud Monitoring
+    - name: iam
+      type: identity
+      providerService: IAM + Workload Identity
+  infrastructure:
+    clusters: []
+    # The VM itself as a deploy host. deploy_target_resolver reads this to
+    # materialize SSH-based provider-apply; deploy_app_deployer runs
+    # `docker compose up -d` on the host over SSH after immutable approval.
+    hosts:
+      - name: gpu-vm-0
+        service: gpu-vm
+        endpoint: ubuntu@136.113.88.57
+        user: ubuntu
+        sshKeyRef: model-serving-gpu-vm-ssh-key
+        gpuCount: 1
+    secretStores:
+      - name: gcp-secret-manager
+        service: secret-manager
+  credentialProfiles:
+    # GCP service account for control-plane API access (Artifact Registry push,
+    # Secret Manager read). Refs only; raw key stays in the internal vault.
+    - name: gcp
+      source: internal_vault
+      required: true
+      kind: service_account
+      ref: gcp-sa-key-json
+      fields:
+        project: gcp-secret-manager-project-id
+    # SSH PEM key for the VM. The user places the PEM at ~/Documents/ on the
+    # control host; it is ingested into the vault under the ref below. Deploy
+    # agents never see the raw key — they receive it via the secrets service
+    # at apply time.
+    - name: ssh
+      source: internal_vault
+      required: true
+      purpose: vm-access
+      kind: ssh_key
+      ref: model-serving-gpu-vm-ssh-key
+      fields:
+        user: ubuntu
+        host: 136.113.88.57
+    # Optional: separate SA for registry push (can reuse the gcp profile).
+    - name: gcp-registry
+      source: internal_vault
+      required: false
+      purpose: registry
+      kind: service_account
+      ref: gcp-sa-key-json
