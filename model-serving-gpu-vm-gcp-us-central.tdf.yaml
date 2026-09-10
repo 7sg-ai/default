@@ -2,7 +2,7 @@ apiVersion: tdf.7sg.ai/v1
 kind: TargetDefinition
 metadata:
   name: model-serving-gpu-vm-gcp-us-central
-  version: "1.0.4"
+  version: "1.0.5"
   displayName: GCP US Central - GPU VM (single-host, Docker Compose)
   description: >
     Pre-provisioned GCP GPU VM target for the 7sg-ai/model-serving apps.
@@ -95,6 +95,9 @@ target:
       fields:
         user: ubuntu
         host: 136.113.88.57
+        store: gcp-secret-manager
+        key: model-serving-gpu-vm-ssh-key
+        project: gen-lang-client-0373235205
     - name: gcp-registry
       source: internal_vault
       required: false
