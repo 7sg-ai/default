@@ -2,14 +2,16 @@ apiVersion: tdf.7sg.ai/v1
 kind: TargetDefinition
 metadata:
   name: model-serving-gpu-vm-gcp-us-central
-  version: "1.0.2"
+  version: "1.0.3"
   displayName: GCP US Central - GPU VM (single-host, Docker Compose)
   description: >
-    Pre-provisioned GCP GPU VM target for hf-streamlit-chat (7sg-ai/model-serving).
-    A single GPU VM (Docker + NVIDIA Container Toolkit) hosts the app container
-    and its vLLM model-server sidecar via Docker Compose. Deploy-only (no profile).
-    Deploy agents reach the VM over SSH with a PEM key (secret ref) and ship
-    images via Artifact Registry. No Kubernetes, no Cloud Run.
+    Pre-provisioned GCP GPU VM target for the 7sg-ai/model-serving apps.
+    A single GPU VM (Docker + NVIDIA Container Toolkit) hosts an app
+    container and its model-server sidecar (NIM or vLLM) via Docker
+    Compose. Deploy agents reach the VM over SSH with a PEM
+    key (secret ref) and ship images via Artifact Registry.
+    No Kubernetes, no Cloud Run. Workload-agnostic:
+    the app URL/port belongs in the WDF, not here.
   tags:
     provider: gcp
     geo: us
@@ -30,7 +32,6 @@ target:
       providerService: GCE GPU VM (single host)
       endpoints:
         ssh: ubuntu@136.113.88.57
-        http: http://136.113.88.57:8501
       capabilities:
         supportsSSH: true
         supportsDockerCompose: true
@@ -72,7 +73,7 @@ target:
         service: gpu-vm
         endpoint: ubuntu@136.113.88.57
         user: ubuntu
-        sshKeyRef: model-serving-gpu-vm-ssh-key
+        sshKeyRef: ssh          # references credentialProfiles[].name: ssh (external GCP Secret Manager)
         gpuCount: 1
     secretStores:
       - name: gcp-secret-manager
@@ -86,11 +87,14 @@ target:
       fields:
         project: gcp-secret-manager-project-id
     - name: ssh
-      source: internal_vault
+      source: external_vault
       required: true
       purpose: vm-access
       kind: ssh_key
       ref: model-serving-gpu-vm-ssh-key
+      externalRef:
+        provider: gcp-secret-manager
+        key: model-serving-gpu-vm-ssh-key
       fields:
         user: ubuntu
         host: 136.113.88.57
