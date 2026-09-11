@@ -2,16 +2,18 @@ apiVersion: tdf.7sg.ai/v1
 kind: TargetDefinition
 metadata:
   name: model-serving-gpu-vm-gcp-us-central
-  version: "1.0.5"
+  version: "1.0.6"
   displayName: GCP US Central - GPU VM (single-host, Docker Compose)
   description: >
     Pre-provisioned GCP GPU VM target for the 7sg-ai/model-serving apps.
     A single GPU VM (Docker + NVIDIA Container Toolkit) hosts an app
-    container and its model-server sidecar (NIM or vLLM) via Docker
-    Compose. Deploy agents reach the VM over SSH with a PEM
-    key (secret ref) and ship images via Artifact Registry.
-    No Kubernetes, no Cloud Run. Workload-agnostic:
-    the app URL/port belongs in the WDF, not here.
+    container and its NIM sidecar via Docker Compose over SSH.
+    Host prerequisite: proprietary NVIDIA driver 610.57.04 MUST already
+    be loaded (open 615 hangs CUDA). Deploy gates with nvidia-smi + a
+    CUDA_OK matmul; it never apt-installs or replaces the driver.
+    Apply is compose-on-host (no Cloud Run). Artifact Registry may exist
+    on the project but is optional and unused for this apply path.
+    Workload-agnostic: the app URL/port belongs in the WDF, not here.
   tags:
     provider: gcp
     geo: us
@@ -75,6 +77,9 @@ target:
         user: ubuntu
         sshKeyRef: ssh          # references credentialProfiles[].name: ssh (external GCP Secret Manager)
         gpuCount: 1
+        driverPrerequisite: proprietary-nvidia-610.57.04
+        cudaOkRequired: true
+        neverInstallDriver: true
     secretStores:
       - name: gcp-secret-manager
         service: secret-manager
