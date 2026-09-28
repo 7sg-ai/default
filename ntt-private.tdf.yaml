@@ -1,0 +1,101 @@
+apiVersion: tdf.7sg.ai/v1
+kind: TargetDefinition
+metadata:
+  name: ntt-private
+  version: "1.0.0"
+  displayName: NTT Private Environment - Rancher/RK-API + GB10/ARM
+  description: >
+    NTT private lab target. Four GB10 (Grace/ARM) nodes running Kubernetes.
+    Sherpa deploys as a tenant in an assigned namespace. Control-plane
+    access is through Rancher/RK-API; no direct kube-api. Model endpoint
+    lifecycle is managed through NTT's model management API; Sherpa does
+    not stand up the model server itself for this target.
+  tags:
+    provider: ntt
+    geo: us
+    tier: private
+target:
+  provider: private
+  regions:
+    - ntt-lab
+  geography:
+    continent: na
+    country: us
+    site: ntt-lab
+  networking:
+    defaultNetworkPolicy: private
+    runtimeAccessToPrivateEndpoints: tbd
+  services:
+    - name: ntt-k8s
+      type: kubernetes
+      providerService: NTT Kubernetes via Rancher/RK-API
+      endpoints:
+        rancherApi: https://<rancher-endpoint>/v3
+      capabilities:
+        accessMode: rancher
+        supportsDirectKubeApi: false
+        supportsNamespaceTenant: true
+        supportsPV: true
+        arch: arm64
+      defaults:
+        namespace: <assigned-namespace>
+    - name: ntt-model-mgmt
+      type: ml-platform
+      providerService: NTT Model Management API
+      endpoints:
+        openaiCompatible: https://<ntt-model-endpoint>/v1
+      capabilities:
+        managesModelLifecycle: true
+        sherpaDeploysModel: false
+    - name: yugabytedb-ntt
+      type: database
+      providerService: YugabyteDB (on-prem, ARM)
+      capabilities:
+        supportsPrivateEndpoints: true
+        graphEngine: apache-age
+        arch: arm64
+    - name: ntt-secrets
+      type: secrets
+      providerService: External Secrets / Vault (NTT-managed)
+    - name: ntt-identity
+      type: identity
+      providerService: Rancher service account / OIDC
+    - name: ntt-observability
+      type: observability
+      providerService: Prometheus / Grafana / Logs (NTT-managed)
+  infrastructure:
+    clusters:
+      - name: ntt-gb10-cluster
+        service: ntt-k8s
+        nodes: 4
+        arch: arm64
+        gpu: gb10
+    secretStores:
+      - name: ntt-vault
+        service: ntt-secrets
+  credentialProfiles:
+    - name: rancher
+      source: external_vault
+      required: true
+      kind: api_key
+      ref: ntt-rancher-key
+      permissions:
+        minimumRequired: tbd
+        adminAssumed: false
+    - name: ntt-model-api
+      source: external_vault
+      required: true
+      kind: api_key
+      ref: ntt-model-api-key
+  notes:
+    - >
+      Minimum Rancher permissions required for Sherpa to deploy and manage
+      its workload in the assigned namespace still need to be worked through
+      with NTT. Full/admin permissions must not be assumed.
+    - >
+      PV/storage behaviour and related permissions under namespace-level
+      access still need to be worked through with NTT.
+    - >
+      Runtime access path between the Google-hosted application interface
+      and the private model/graph endpoints is TBD until NTT confirms how
+      those endpoints are exposed.

@@ -1,0 +1,32 @@
+apiVersion: dsdf.7sg.ai/v1
+kind: DataSourceDefinition
+metadata:
+  name: bigquery-flights
+  version: "1.0.0"
+  tags:
+    env: prod
+home:
+  tdfRef: gcp-native
+connection:
+  type: warehouse
+  provider: gcp-bigquery
+  resource: cymbal_flights_dataset
+  capabilities:
+    supportsCrossDatasetJoins: true
+    supportsMcpToolbox: false
+    builtinAdkTool: true
+auth:
+  method: gcp-workload-identity
+  secretRefs:
+    - bq-data-project-id
+secrets:
+  provider: gcp-secret-manager
+  inheritFromWdf: true
+  secretRefs:
+    - name: bq-data-project-id
+      injectAs: env
+      envVar: BQ_DATA_PROJECT_ID
+      externalRef:
+        provider: gcp-secret-manager
+        vaultRef: gcp-main
+        key: bq-data-project-id
