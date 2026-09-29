@@ -1,0 +1,34 @@
+apiVersion: dsdf.7sg.ai/v1
+kind: DataSourceDefinition
+metadata:
+  name: spanner-graph-gcp
+  version: "1.0.0"
+  tags:
+    env: prod
+    role: graph
+home:
+  tdfRef: gcp-native
+connection:
+  type: database
+  provider: gcp-spanner
+  resource: projects/gen-lang-client-0373235205/instances/data-science/databases/workbook_graph
+  project: gen-lang-client-0373235205
+  instance: data-science
+  database: workbook_graph
+  capabilities:
+    graphEngine: spanner-graph
+    supportsPropertyGraph: true
+    excelLoader: true
+auth:
+  method: gcp-workload-identity
+  secretRefs: []
+secrets:
+  provider: inherit
+  inheritFromWdf: true
+  secretRefs: []
+notes:
+  - >
+    Cloud Run uses its attached service account through Application Default
+    Credentials. The runtime identity needs Spanner session, data read/write,
+    and database DDL permissions because workbook loading creates tables and
+    property graphs.
