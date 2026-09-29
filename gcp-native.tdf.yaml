@@ -2,12 +2,12 @@ apiVersion: tdf.7sg.ai/v1
 kind: TargetDefinition
 metadata:
   name: gcp-native
-  version: "1.0.0"
-  displayName: GCP US Central - Cloud Run + Vertex AI + BigQuery + AlloyDB + YugabyteDB
+  version: "1.1.0"
+  displayName: GCP US Central - Cloud Run + Vertex AI + BigQuery + Spanner
   description: >
     GCP target for the Data Science agent. Cloud Run for the application
-    container, Vertex AI for Gemini model access, BigQuery and AlloyDB for
-    the flights datasets, and YugabyteDB for the graph store.
+    container, Vertex AI for Gemini model access, BigQuery for warehouse
+    analytics, and Spanner Graph for uploaded workbook graphs.
   tags:
     provider: gcp
     geo: us
@@ -54,18 +54,13 @@ target:
         api: https://bigquery.googleapis.com
       capabilities:
         supportsPrivateEndpoints: true
-    - name: alloydb
+    - name: spanner
       type: database
-      providerService: AlloyDB for PostgreSQL
+      providerService: Cloud Spanner
       capabilities:
         supportsPrivateEndpoints: true
-        supportsMcpToolbox: true
-    - name: yugabytedb
-      type: database
-      providerService: YugabyteDB (self-hosted on GKE)
-      capabilities:
-        supportsPrivateEndpoints: true
-        graphEngine: apache-age
+        graphEngine: spanner-graph
+        supportsPropertyGraph: true
     - name: secret-manager
       type: secrets
       providerService: Secret Manager
