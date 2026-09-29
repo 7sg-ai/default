@@ -19,12 +19,12 @@ connection:
     excelLoader: true
     arch: arm64
 auth:
-  method: postgres-password
+  method: password
   secretRefs:
     - yugabyte-ntt-user
     - yugabyte-ntt-password
 secrets:
-  provider: external-secrets
+  provider: external
   inheritFromWdf: false
   secretRefs:
     - name: yugabyte-ntt-user

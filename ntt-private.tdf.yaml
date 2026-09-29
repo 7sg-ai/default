@@ -9,7 +9,11 @@ metadata:
     Sherpa deploys as a tenant in an assigned namespace. Control-plane
     access is through Rancher/RK-API; no direct kube-api. Model endpoint
     lifecycle is managed through NTT's model management API; Sherpa does
-    not stand up the model server itself for this target.
+    not stand up the model server itself for this target. Minimum Rancher
+    permissions for namespace deploy are still TBD and must not be assumed
+    to be admin. PV and storage permissions under namespace access are
+    still TBD. The path from the Google-hosted application to the private
+    model and graph endpoints is TBD until NTT confirms how they are exposed.
   tags:
     provider: ntt
     geo: us
@@ -21,7 +25,7 @@ target:
   geography:
     continent: na
     country: us
-    site: ntt-lab
+    metro: ntt-lab
   networking:
     defaultNetworkPolicy: private
     runtimeAccessToPrivateEndpoints: tbd
@@ -79,23 +83,8 @@ target:
       required: true
       kind: api_key
       ref: ntt-rancher-key
-      permissions:
-        minimumRequired: tbd
-        adminAssumed: false
     - name: ntt-model-api
       source: external_vault
       required: true
       kind: api_key
       ref: ntt-model-api-key
-  notes:
-    - >
-      Minimum Rancher permissions required for Sherpa to deploy and manage
-      its workload in the assigned namespace still need to be worked through
-      with NTT. Full/admin permissions must not be assumed.
-    - >
-      PV/storage behaviour and related permissions under namespace-level
-      access still need to be worked through with NTT.
-    - >
-      Runtime access path between the Google-hosted application interface
-      and the private model/graph endpoints is TBD until NTT confirms how
-      those endpoints are exposed.

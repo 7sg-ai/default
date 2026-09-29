@@ -20,7 +20,7 @@ auth:
   secretRefs:
     - bq-data-project-id
 secrets:
-  provider: gcp-secret-manager
+  provider: gcpSecretManager
   inheritFromWdf: true
   secretRefs:
     - name: bq-data-project-id
@@ -30,3 +30,15 @@ secrets:
         provider: gcp-secret-manager
         vaultRef: gcp-main
         key: bq-data-project-id
+    - name: bq-compute-project-id
+      injectAs: env
+      envVar: BQ_COMPUTE_PROJECT_ID
+      externalRef:
+        provider: gcp-secret-manager
+        vaultRef: gcp-main
+        key: bq-compute-project-id
+    - name: bq-dataset-id
+      injectAs: env
+      envVar: BQ_DATASET_ID
+      source_type: literal_non_secret
+      value: cymbal_flights_dataset

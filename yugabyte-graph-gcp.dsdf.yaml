@@ -18,12 +18,12 @@ connection:
     excelLoader: true
     arch: x86_64
 auth:
-  method: postgres-password
+  method: password
   secretRefs:
     - yugabyte-user
     - yugabyte-password
 secrets:
-  provider: gcp-secret-manager
+  provider: gcpSecretManager
   inheritFromWdf: true
   secretRefs:
     - name: yugabyte-user

@@ -13,16 +13,14 @@ connection:
   resource: flights_dataset
   capabilities:
     supportsMcpToolbox: true
-    mcpToolboxHost: localhost
-    mcpToolboxPort: "5000"
     mcpToolset: postgres-database-tools
 auth:
-  method: postgres-password
+  method: password
   secretRefs:
     - alloydb-postgres-user
     - alloydb-postgres-password
 secrets:
-  provider: gcp-secret-manager
+  provider: gcpSecretManager
   inheritFromWdf: true
   secretRefs:
     - name: alloydb-postgres-user
@@ -39,3 +37,15 @@ secrets:
         provider: gcp-secret-manager
         vaultRef: gcp-main
         key: alloydb-postgres-password
+    - name: mcp-toolbox-host
+      injectAs: env
+      envVar: MCP_TOOLBOX_HOST
+      externalRef:
+        provider: gcp-secret-manager
+        vaultRef: gcp-main
+        key: mcp-toolbox-host
+    - name: mcp-toolbox-port
+      injectAs: env
+      envVar: MCP_TOOLBOX_PORT
+      source_type: literal_non_secret
+      value: "8080"

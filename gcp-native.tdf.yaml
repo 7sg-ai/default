@@ -48,7 +48,7 @@ target:
           - us-east1
           - europe-west1
     - name: bigquery
-      type: warehouse
+      type: database
       providerService: BigQuery
       endpoints:
         api: https://bigquery.googleapis.com
@@ -85,7 +85,7 @@ target:
   infrastructure:
     clusters: []
     secretStores:
-      - name: gcp-secret-manager
+      - name: gcp-main
         service: secret-manager
   credentialProfiles:
     - name: gcp
@@ -98,3 +98,6 @@ target:
     - name: gcp-registry
       source: internal_vault
       required: false
+      purpose: registry
+      kind: service_account
+      ref: gcp-sa-key-json
