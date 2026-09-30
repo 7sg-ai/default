@@ -2,7 +2,7 @@ apiVersion: dsdf.7sg.ai/v1
 kind: DataSourceDefinition
 metadata:
   name: spanner-graph-gcp
-  version: "1.0.0"
+  version: "1.1.0"
   tags:
     env: prod
     role: graph
@@ -22,6 +22,25 @@ connection:
 auth:
   method: gcp-workload-identity
   secretRefs: []
+provisioning:
+  supportedModes:
+    - existing
+    - managed
+  defaultMode: existing
+  provisioner:
+    type: repository-script
+    protocolVersion: "1"
+    runtime: python3
+    path: infra/gcp/spanner/provision.py
+  parameters:
+    region: us-central1
+    instanceId: data-science
+    databaseId: workbook_graph
+    processingUnits: 100
+  outputs:
+    SPANNER_PROJECT_ID: environment.SPANNER_PROJECT_ID
+    SPANNER_INSTANCE_ID: environment.SPANNER_INSTANCE_ID
+    SPANNER_DATABASE_ID: environment.SPANNER_DATABASE_ID
 secrets:
   provider: inherit
   inheritFromWdf: true
