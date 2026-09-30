@@ -1,0 +1,42 @@
+apiVersion: dsdf.7sg.ai/v1
+kind: DataSourceDefinition
+metadata:
+  name: neo4j-graph-ntt
+  version: "1.0.0"
+  tags:
+    env: prod
+    role: graph
+    target: private
+home:
+  tdfRef: ntt-private
+connection:
+  type: database
+  provider: neo4j
+  resource: neo4j
+  uri: bolt://neo4j.ntt-tenant-a.svc:7687
+  capabilities:
+    graphEngine: neo4j
+    replaces: spanner-graph
+    excelLoader: false
+auth:
+  method: password
+  secretRefs:
+    - neo4j-password
+secrets:
+  provider: gcpSecretManager
+  inheritFromWdf: true
+  secretRefs:
+    - name: neo4j-password
+      injectAs: env
+      envVar: NEO4J_PASSWORD
+      externalRef:
+        provider: gcp-secret-manager
+        vaultRef: gcp-main
+        key: neo4j-password
+notes:
+  - >
+    Replaces Spanner Graph for private-ntt. The password is a static
+    Secret Manager value. The deploy workflow copies it into a Kubernetes
+    secret in ntt-tenant-a. The current app accepts dataset types bigquery
+    and spanner only, so this source is deployed and not listed in
+    DATASET_CONFIG_FILE.

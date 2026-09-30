@@ -1,0 +1,41 @@
+apiVersion: dsdf.7sg.ai/v1
+kind: DataSourceDefinition
+metadata:
+  name: postgres-acme
+  version: "1.0.0"
+  tags:
+    env: prod
+    role: workbook
+home:
+  tdfRef: ntt-private
+connection:
+  type: database
+  provider: postgres
+  resource: acme
+  host: postgres-acme.ntt-tenant-a.svc
+  port: 5432
+  user: acme
+  capabilities:
+    loadOnDeploy: true
+    sourceFile: sample_data/Acme Corp Financial Model.xlsx
+auth:
+  method: password
+  secretRefs:
+    - postgres-acme-password
+secrets:
+  provider: gcpSecretManager
+  inheritFromWdf: true
+  secretRefs:
+    - name: postgres-acme-password
+      injectAs: env
+      envVar: POSTGRES_PASSWORD
+      externalRef:
+        provider: gcp-secret-manager
+        vaultRef: gcp-main
+        key: postgres-acme-password
+notes:
+  - >
+    The password is a static Secret Manager value. The deploy workflow
+    copies it into a Kubernetes secret in ntt-tenant-a and runs a Job
+    that loads sample_data/Acme Corp Financial Model.xlsx. The agent
+    does not open that folder at startup.

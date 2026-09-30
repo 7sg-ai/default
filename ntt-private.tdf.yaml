@@ -2,24 +2,20 @@ apiVersion: tdf.7sg.ai/v1
 kind: TargetDefinition
 metadata:
   name: ntt-private
-  version: "1.0.0"
-  displayName: NTT Private Environment - Rancher/RK-API + GB10/ARM
+  version: "1.1.0"
+  displayName: NTT prep cluster - RKE2 amd64
   description: >
-    NTT private lab target. Four GB10 (Grace/ARM) nodes running Kubernetes.
-    Sherpa deploys as a tenant in an assigned namespace. Control-plane
-    access is through Rancher/RK-API; no direct kube-api. Model endpoint
-    lifecycle is managed through NTT's model management API; Sherpa does
-    not stand up the model server itself for this target. Minimum Rancher
-    permissions for namespace deploy are still TBD and must not be assumed
-    to be admin. PV and storage permissions under namespace access are
-    still TBD. The path from the Google-hosted application to the private
-    model and graph endpoints is TBD until NTT confirms how they are exposed.
+    NTT demo prep cluster. RKE2 v1.32.13, amd64. Deploy into namespace
+    ntt-tenant-a. Rancher UI is the operator console. Workload access is
+    the kube API with the tenant-a kubeconfig. Same-namespace traffic and
+    DNS to kube-system are allowed. All other egress is denied, including
+    Vertex, the Gemini API, and BigQuery, until an egress allow is added.
   tags:
     provider: ntt
     geo: us
     tier: private
 target:
-  provider: private
+  provider: kubernetes
   regions:
     - ntt-lab
   geography:
@@ -28,63 +24,92 @@ target:
     metro: ntt-lab
   networking:
     defaultNetworkPolicy: private
-    runtimeAccessToPrivateEndpoints: tbd
+    sameNamespace: allow
+    crossNamespace: deny
+    egress:
+      - dns to kube-system port 53
+      - pods in the same namespace
+    googleApiEgress: denied
   services:
     - name: ntt-k8s
       type: kubernetes
-      providerService: NTT Kubernetes via Rancher/RK-API
+      providerService: RKE2
       endpoints:
-        rancherApi: https://<rancher-endpoint>/v3
+        kubeApi: https://217.18.55.169:6443
+        rancherUi: https://rancher.217.18.55.173.sslip.io/
       capabilities:
-        accessMode: rancher
-        supportsDirectKubeApi: false
+        accessMode: kubeconfig
+        supportsDirectKubeApi: true
         supportsNamespaceTenant: true
-        supportsPV: true
-        arch: arm64
+        arch: amd64
+        kubernetesVersion: v1.32.13+rke2r1
       defaults:
-        namespace: <assigned-namespace>
-    - name: ntt-model-mgmt
+        namespace: ntt-tenant-a
+        storageClass: longhorn
+        ingressClass: nginx
+    - name: vertex-ai
       type: ml-platform
-      providerService: NTT Model Management API
+      providerService: Vertex AI (Gemini)
       endpoints:
-        openaiCompatible: https://<ntt-model-endpoint>/v1
+        api: https://us-central1-aiplatform.googleapis.com
       capabilities:
-        managesModelLifecycle: true
         sherpaDeploysModel: false
-    - name: yugabytedb-ntt
+        model: gemini-2.5-flash
+    - name: bigquery
       type: database
-      providerService: YugabyteDB (on-prem, ARM)
-      capabilities:
-        supportsPrivateEndpoints: true
-        graphEngine: apache-age
-        arch: arm64
+      providerService: BigQuery
+      endpoints:
+        api: https://bigquery.googleapis.com
+    - name: postgres-acme
+      type: database
+      providerService: PostgreSQL
+      defaults:
+        namespace: ntt-tenant-a
+        service: postgres-acme.ntt-tenant-a.svc
+        port: 5432
+        database: acme
+    - name: neo4j
+      type: database
+      providerService: Neo4j
+      defaults:
+        namespace: ntt-tenant-a
+        service: neo4j.ntt-tenant-a.svc
+        boltPort: 7687
     - name: ntt-secrets
       type: secrets
-      providerService: External Secrets / Vault (NTT-managed)
-    - name: ntt-identity
-      type: identity
-      providerService: Rancher service account / OIDC
-    - name: ntt-observability
-      type: observability
-      providerService: Prometheus / Grafana / Logs (NTT-managed)
+      providerService: Kubernetes Secrets
+      defaults:
+        namespace: ntt-tenant-a
   infrastructure:
     clusters:
-      - name: ntt-gb10-cluster
+      - name: ntt-demo-prep
         service: ntt-k8s
-        nodes: 4
-        arch: arm64
-        gpu: gb10
+        arch: amd64
+        storage: 500Gi
+        nodes:
+          - name: ntt-demo-cp1
+            cpu: 4
+            memoryGi: 16
+          - name: ntt-demo-w1
+            cpu: 8
+            memoryGi: 32
+          - name: ntt-demo-w2
+            cpu: 8
+            memoryGi: 32
     secretStores:
-      - name: ntt-vault
+      - name: ntt-tenant-a-secrets
         service: ntt-secrets
   credentialProfiles:
-    - name: rancher
-      source: external_vault
+    - name: tenant-a-kubeconfig
+      source: internal_vault
       required: true
-      kind: api_key
-      ref: ntt-rancher-key
-    - name: ntt-model-api
-      source: external_vault
+      kind: kubeconfig
+      ref: ntt-demo-prep-tenant-a
+      namespace: ntt-tenant-a
+    - name: gcp
+      source: internal_vault
       required: true
-      kind: api_key
-      ref: ntt-model-api-key
+      kind: service_account
+      ref: gcp-sa-key-json
+      fields:
+        project: gcp-secret-manager-project-id

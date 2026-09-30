@@ -1,0 +1,50 @@
+apiVersion: dsdf.7sg.ai/v1
+kind: DataSourceDefinition
+metadata:
+  name: bigquery-workbook
+  version: "1.0.0"
+  tags:
+    env: prod
+    role: warehouse
+home:
+  tdfRef: gcp-native
+connection:
+  type: warehouse
+  provider: gcp-bigquery
+  resource: workbook_data
+  location: us-central1
+  capabilities:
+    builtinAdkTool: true
+auth:
+  method: gcp-service-account
+  secretRefs:
+    - deploy-service-account-key
+secrets:
+  provider: gcpSecretManager
+  inheritFromWdf: true
+  secretRefs:
+    - name: bq-data-project-id
+      injectAs: env
+      envVar: BQ_DATA_PROJECT_ID
+      externalRef:
+        provider: gcp-secret-manager
+        vaultRef: gcp-main
+        key: bq-data-project-id
+    - name: bq-compute-project-id
+      injectAs: env
+      envVar: BQ_COMPUTE_PROJECT_ID
+      externalRef:
+        provider: gcp-secret-manager
+        vaultRef: gcp-main
+        key: bq-compute-project-id
+    - name: bq-dataset-id
+      injectAs: env
+      envVar: BQ_DATASET_ID
+      source_type: literal_non_secret
+      value: workbook_data
+notes:
+  - >
+    Query path the agent already speaks. Tables acme_summary,
+    acme_debt_terms, acme_debt_annual, acme_income_statement, and
+    acme_assumptions are already in this dataset. The pod can reach
+    BigQuery only after ntt-tenant-a allows egress to Google on TCP 443.
