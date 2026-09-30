@@ -16,9 +16,9 @@ connection:
   capabilities:
     builtinAdkTool: true
 auth:
-  method: gcp-service-account
+  method: gcp-workload-identity
   secretRefs:
-    - deploy-service-account-key
+    - bq-data-project-id
 secrets:
   provider: gcpSecretManager
   inheritFromWdf: true

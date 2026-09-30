@@ -27,9 +27,9 @@ target:
     sameNamespace: allow
     crossNamespace: deny
     egress:
-      - dns to kube-system port 53
-      - pods in the same namespace
-    googleApiEgress: denied
+      dns: kube-system:53
+      sameNamespace: allow
+      googleApi: denied
   services:
     - name: ntt-k8s
       type: kubernetes
@@ -105,7 +105,8 @@ target:
       required: true
       kind: kubeconfig
       ref: ntt-demo-prep-tenant-a
-      namespace: ntt-tenant-a
+      fields:
+        namespace: ntt-tenant-a
     - name: gcp
       source: internal_vault
       required: true
