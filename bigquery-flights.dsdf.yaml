@@ -2,7 +2,7 @@ apiVersion: dsdf.7sg.ai/v1
 kind: DataSourceDefinition
 metadata:
   name: bigquery-flights
-  version: "1.1.0"
+  version: "1.2.0"
   tags:
     env: prod
 home:
@@ -32,6 +32,7 @@ provisioning:
   parameters:
     location: us-central1
     datasetId: cymbal_flights_dataset
+    billingModel: on-demand
     seedTables:
       - table: flight_history
         file: flights_dataset/flight_history_table.csv
