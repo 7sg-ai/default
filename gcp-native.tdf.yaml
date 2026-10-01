@@ -2,7 +2,7 @@ apiVersion: tdf.7sg.ai/v1
 kind: TargetDefinition
 metadata:
   name: gcp-native
-  version: "1.2.0"
+  version: "1.3.0"
   displayName: GCP US Central - Cloud Run + Vertex AI + BigQuery + Spanner
   description: >
     GCP target for the Data Science agent. Cloud Run for the application
