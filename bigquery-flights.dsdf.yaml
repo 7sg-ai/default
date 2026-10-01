@@ -2,7 +2,7 @@ apiVersion: dsdf.7sg.ai/v1
 kind: DataSourceDefinition
 metadata:
   name: bigquery-flights
-  version: "1.0.0"
+  version: "1.1.0"
   tags:
     env: prod
 home:
@@ -19,6 +19,29 @@ auth:
   method: gcp-workload-identity
   secretRefs:
     - bq-data-project-id
+provisioning:
+  supportedModes:
+    - existing
+    - managed
+  defaultMode: existing
+  provisioner:
+    type: repository-script
+    protocolVersion: "1"
+    runtime: python3
+    path: infra/gcp/bigquery/provision.py
+  parameters:
+    location: us-central1
+    datasetId: cymbal_flights_dataset
+    seedTables:
+      - table: flight_history
+        file: flights_dataset/flight_history_table.csv
+      - table: cymbalair_policies
+        file: flights_dataset/cymbalair_policies_table.csv
+        allowQuotedNewlines: true
+      - table: ticket_sales_history
+        file: flights_dataset/ticket_sales_history_table.csv
+  outputs:
+    BQ_DATASET_ID: environment.BQ_DATASET_ID
 secrets:
   provider: gcpSecretManager
   inheritFromWdf: true
@@ -37,8 +60,3 @@ secrets:
         provider: gcp-secret-manager
         vaultRef: gcp-main
         key: bq-compute-project-id
-    - name: bq-dataset-id
-      injectAs: env
-      envVar: BQ_DATASET_ID
-      source_type: literal_non_secret
-      value: cymbal_flights_dataset
