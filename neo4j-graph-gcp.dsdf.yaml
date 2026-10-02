@@ -33,7 +33,7 @@ provisioning:
     clusterName: data-science-neo4j
     namespace: neo4j
     releaseName: neo4j
-    loadBalancerIp: "10.128.0.20"
+    loadBalancerIp: "10.128.0.4"
     storageGb: 20
     chartVersion: "5.26.1"
   outputs:
@@ -45,7 +45,7 @@ secrets:
   secretRefs: []
 notes:
   - >
-    Neo4j runs in a GKE cluster on the default VPC. Cloud Run reaches it over
+    Neo4j runs in a GKE cluster on the data-science-neo4j VPC. Cloud Run reaches it over
     Bolt on a reserved internal load balancer address, so nothing is exposed
     to the internet. The password is the neo4j-password secret that the WDF
     declares; the provisioner reads it from Secret Manager and never prints
