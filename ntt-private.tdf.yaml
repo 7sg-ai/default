@@ -2,14 +2,15 @@ apiVersion: tdf.7sg.ai/v1
 kind: TargetDefinition
 metadata:
   name: ntt-private
-  version: "1.1.0"
+  version: "1.2.0"
   displayName: NTT prep cluster - RKE2 amd64
   description: >
     NTT demo prep cluster. RKE2 v1.32.13, amd64. Deploy into namespace
     ntt-tenant-a. Rancher UI is the operator console. Workload access is
     the kube API with the tenant-a kubeconfig. Same-namespace traffic and
-    DNS to kube-system are allowed. All other egress is denied, including
-    Vertex, the Gemini API, and BigQuery, until an egress allow is added.
+    DNS to kube-system are allowed.
+    Pods labeled app=data-science may egress TCP 443. That allow covers
+    Vertex Gemini and BigQuery. Non-443 egress stays closed.
   tags:
     provider: ntt
     geo: us
@@ -29,7 +30,9 @@ target:
     egress:
       dns: kube-system:53
       sameNamespace: allow
-      googleApi: denied
+      googleApi: allow
+      googleApiPort: 443
+      googleApiSelector: app=data-science
   services:
     - name: ntt-k8s
       type: kubernetes

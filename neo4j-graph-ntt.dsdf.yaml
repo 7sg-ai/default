@@ -23,20 +23,18 @@ auth:
   secretRefs:
     - neo4j-password
 secrets:
-  provider: gcpSecretManager
+  provider: inherit
   inheritFromWdf: true
   secretRefs:
     - name: neo4j-password
       injectAs: env
       envVar: NEO4J_PASSWORD
-      externalRef:
-        provider: gcp-secret-manager
-        vaultRef: gcp-main
-        key: neo4j-password
+      source_type: internal_value
+      internalRef: neo4j-password
 notes:
   - >
-    Replaces Spanner Graph for private-ntt. The password is a static
-    Secret Manager value. The deploy workflow copies it into a Kubernetes
-    secret in ntt-tenant-a. The current app accepts dataset types bigquery
+    Replaces Spanner Graph for private-ntt. The password is stored in the
+    internal vault as neo4j-password and in the Kubernetes secret
+    neo4j-password in ntt-tenant-a. The current app accepts dataset types bigquery
     and spanner only, so this source is deployed and not listed in
     DATASET_CONFIG_FILE.

@@ -23,19 +23,17 @@ auth:
   secretRefs:
     - postgres-acme-password
 secrets:
-  provider: gcpSecretManager
+  provider: inherit
   inheritFromWdf: true
   secretRefs:
     - name: postgres-acme-password
       injectAs: env
       envVar: POSTGRES_PASSWORD
-      externalRef:
-        provider: gcp-secret-manager
-        vaultRef: gcp-main
-        key: postgres-acme-password
+      source_type: internal_value
+      internalRef: postgres-acme-password
 notes:
   - >
-    The password is a static Secret Manager value. The deploy workflow
-    copies it into a Kubernetes secret in ntt-tenant-a and runs a Job
-    that loads sample_data/Acme Corp Financial Model.xlsx. The agent
+    The password is stored in the internal vault as postgres-acme-password
+    and in the Kubernetes secret postgres-acme-password in ntt-tenant-a.
+    A deploy Job loads sample_data/Acme Corp Financial Model.xlsx. The agent
     does not open that folder at startup.
