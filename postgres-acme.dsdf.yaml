@@ -2,7 +2,7 @@ apiVersion: dsdf.7sg.ai/v1
 kind: DataSourceDefinition
 metadata:
   name: postgres-acme
-  version: "1.0.0"
+  version: "1.0.1"
   tags:
     env: prod
     role: workbook
