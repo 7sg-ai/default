@@ -2,13 +2,14 @@ apiVersion: tdf.7sg.ai/v1
 kind: TargetDefinition
 metadata:
   name: ntt-private
-  version: "1.2.0"
-  displayName: NTT prep cluster - RKE2 amd64
+  version: "1.3.0"
+  displayName: NTT prep cluster - RKE2 amd64 (Oct 2026)
   description: >
-    NTT demo prep cluster. RKE2 v1.32.13, amd64. Deploy into namespace
-    ntt-tenant-a. Rancher UI is the operator console. Workload access is
-    the kube API with the tenant-a kubeconfig. Same-namespace traffic and
-    DNS to kube-system are allowed.
+    NTT demo prep cluster (refreshed Oct 2026). RKE2, amd64. 48 GB RAM,
+    12 CPU cores, 400 GB storage. Two namespaces: ntt-tenant-a, ntt-tenant-b.
+    Network policy: same-namespace allowed, cross-tenant denied.
+    Deploy into namespace ntt-tenant-a. Rancher UI is the operator console.
+    Workload access is the kube API with the tenant-a kubeconfig.
     Pods labeled app=data-science may egress TCP 443. That allow covers
     Vertex Gemini and BigQuery. Non-443 egress stays closed.
   tags:
@@ -38,8 +39,8 @@ target:
       type: kubernetes
       providerService: RKE2
       endpoints:
-        kubeApi: https://217.18.55.169:6443
-        rancherUi: https://rancher.217.18.55.173.sslip.io/
+        kubeApi: https://151.185.34.22:6443
+        rancherUi: https://rancher.151.185.34.22.sslip.io/
       capabilities:
         accessMode: kubeconfig
         supportsDirectKubeApi: true
@@ -88,17 +89,11 @@ target:
       - name: ntt-demo-prep
         service: ntt-k8s
         arch: amd64
-        storage: 500Gi
-        nodes:
-          - name: ntt-demo-cp1
-            cpu: 4
-            memoryGi: 16
-          - name: ntt-demo-w1
-            cpu: 8
-            memoryGi: 32
-          - name: ntt-demo-w2
-            cpu: 8
-            memoryGi: 32
+        storage: 400Gi
+        totalResources:
+          cpu: 12
+          memoryGi: 48
+          storageGi: 400
     secretStores:
       - name: ntt-tenant-a-secrets
         service: ntt-secrets
