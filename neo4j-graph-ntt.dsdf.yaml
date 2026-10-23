@@ -17,7 +17,8 @@ connection:
   capabilities:
     graphEngine: neo4j
     replaces: spanner-graph
-    excelLoader: false
+    loadOnDeploy: true
+    loadedBy: data_science.private_ntt_load
 auth:
   method: password
   secretRefs:
@@ -35,6 +36,6 @@ notes:
   - >
     Replaces Spanner Graph for private-ntt. The password is stored in the
     internal vault as neo4j-password and in the Kubernetes secret
-    neo4j-password in ntt-tenant-a. The current app accepts dataset types bigquery
-    and spanner only, so this source is deployed and not listed in
-    DATASET_CONFIG_FILE.
+    neo4j-password in ntt-tenant-a. Data is loaded by the deploy Job via
+    data_science.private_ntt_load (loads Acme workbook as a property graph).
+    The private_ntt_dataset_config.json lists this source as acme_graph.

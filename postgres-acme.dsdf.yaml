@@ -18,6 +18,7 @@ connection:
   capabilities:
     loadOnDeploy: true
     sourceFile: sample_data/Acme Corp Financial Model.xlsx
+    loadedBy: data_science.private_ntt_load
 auth:
   method: password
   secretRefs:
